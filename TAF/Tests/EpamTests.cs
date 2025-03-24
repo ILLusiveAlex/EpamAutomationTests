@@ -61,6 +61,47 @@ namespace EpamAutomationTests.Tests
 
             Assert.IsTrue(results.All(text => text.Contains(searchTerm.ToLower())), "Not all results contain the expected term.");
             Logger.Info("Global search test completed successfully.");
+
+        }
+
+        [TestMethod]
+        [DataRow("EPAM_Corporate_Overview_Q4FY-2024.pdf")]
+        public void ValidateFileDownload(string expectedFileName)
+        {
+            Logger.Info($"Starting file download test for: {expectedFileName}");
+            var homePage = new HomePage(Driver, Wait);
+
+            Driver.Navigate().GoToUrl("https://www.epam.com/");
+            homePage.NavigateToAbout();
+            homePage.ScrollToEPAMAtAGlance();
+            homePage.ClickDownloadButton();
+
+            var downloadPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "Downloads", expectedFileName);
+            var timeout = DateTime.Now.AddSeconds(30);
+            while (!File.Exists(downloadPath) && DateTime.Now < timeout)
+            {
+                Thread.Sleep(1000);
+            }
+
+            Assert.IsTrue(File.Exists(downloadPath), $"File {expectedFileName} was not downloaded.");
+            Logger.Info("File download test completed successfully.");
+        }
+
+        [TestMethod]
+        public void ValidateArticleTitleInCarousel()
+        {
+            Logger.Info("Starting carousel article title validation test.");
+            var homePage = new HomePage(Driver, Wait);
+
+            Driver.Navigate().GoToUrl("https://www.epam.com/");
+            homePage.NavigateToInsights();
+            homePage.SwipeCarousel(2); // Swipe twice
+            var expectedTitle = homePage.GetArticleTitleFromCarousel();
+            homePage.ClickReadMore();
+
+            var actualTitle = Wait.Until(d => d.FindElement(By.CssSelector("span.museo-sans-light"))).Text;
+            Assert.AreEqual(expectedTitle, actualTitle, "Article title mismatch.");
+            Logger.Info("Carousel test completed successfully.");
         }
     }
 }

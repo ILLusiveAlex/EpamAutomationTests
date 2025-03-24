@@ -1,5 +1,6 @@
 ﻿using OpenQA.Selenium;
 using OpenQA.Selenium.Support.UI;
+using System;
 using EpamAutomationTests.Core;
 
 namespace EpamAutomationTests.Pages
@@ -15,26 +16,61 @@ namespace EpamAutomationTests.Pages
             _wait = wait;
         }
 
+        // Navigate to "About" section
         public void NavigateToAbout()
         {
             Logger.Info("Navigating to About page.");
             _driver.FindElement(By.LinkText("About")).Click();
         }
 
+        // Navigate to "Insights" section
         public void NavigateToInsights()
         {
             Logger.Info("Navigating to Insights page.");
             _driver.FindElement(By.LinkText("Insights")).Click();
         }
 
+        // Scroll to "EPAM at a Glance" section
         public void ScrollToEPAMAtAGlance()
         {
-            Logger.Info("Scrolling to EPAM At A Glance section.");
-            var element = _driver.FindElement(By.CssSelector(".button__content--desktop"));
-            IJavaScriptExecutor js = (IJavaScriptExecutor)_driver;
-            js.ExecuteScript("arguments[0].scrollIntoView(true);", element);
+            Logger.Info("Scrolling to 'EPAM at a Glance' section.");
+            var element = _wait.Until(d => d.FindElement(By.CssSelector(".button__content--desktop")));
+            ((IJavaScriptExecutor)_driver).ExecuteScript("arguments[0].scrollIntoView(true);", element);
         }
 
-        public IWebElement DownloadButton => _driver.FindElement(By.XPath("//span[contains(@class, 'button__content') and contains(text(), 'DOWNLOAD')]"));
+        // Click the Download button
+        public void ClickDownloadButton()
+        {
+            Logger.Info("Clicking Download button.");
+            _wait.Until(d => d.FindElement(By.XPath("//span[contains(@class, 'button__content') and contains(text(), 'DOWNLOAD')]"))).Click();
+        }
+
+        // Swipe carousel (for Test Case #4)
+        public void SwipeCarousel(int times)
+        {
+            Logger.Info($"Swiping carousel {times} times.");
+            var nextButton = _wait.Until(d => d.FindElement(By.CssSelector("button.slider__right-arrow.slider-navigation-arrow")));
+            ((IJavaScriptExecutor)_driver).ExecuteScript("window.scrollBy(0, 160);");
+            for (int i = 0; i < times; i++)
+            {
+                nextButton.Click();
+                System.Threading.Thread.Sleep(1000); // Pause between swipes
+            }
+        }
+
+        // Get article title from carousel
+        public string GetArticleTitleFromCarousel()
+        {
+            Logger.Info("Getting article title from carousel.");
+            return _wait.Until(d => d.FindElement(By.CssSelector("span.font-size-60 .museo-sans-500.gradient-text"))).Text;
+        }
+
+        // Click "Read More" button
+        public void ClickReadMore()
+        {
+            Logger.Info("Clicking 'Read More' button.");
+            var readMoreButton = _wait.Until(d => d.FindElement(By.CssSelector("a.slider-cta-link")));
+            ((IJavaScriptExecutor)_driver).ExecuteScript("arguments[0].click();", readMoreButton);
+        }
     }
 }

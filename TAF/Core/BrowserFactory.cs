@@ -13,7 +13,7 @@ namespace EpamAutomationTests.Core
                 case "chrome":
                     ChromeOptions options = new ChromeOptions();
                     options.AddArgument("start-maximized");
-                    options.AddArgument("headless");
+                    //options.AddArgument("headless");
                     driver = new ChromeDriver(options);
                     break;
                 default:
