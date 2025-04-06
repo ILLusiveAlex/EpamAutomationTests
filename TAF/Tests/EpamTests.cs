@@ -5,7 +5,8 @@ using OpenQA.Selenium;
 using System.IO;
 using System.Linq;
 
-namespace EpamAutomationTests.Tests
+
+namespace EpamAutomationTests.Tests.Core
 {
     [TestClass]
     public class EpamTests : BaseTest
@@ -15,24 +16,24 @@ namespace EpamAutomationTests.Tests
         [DataRow("C#")]
         public void ValidateJobSearch(string keyword)
         {
+            var careersPage = new CareersPage(Driver, Wait);
+
             Logger.Info($"Starting job search test for keyword: {keyword}");
-            Driver.Navigate().GoToUrl("https://www.epam.com/");
+            Driver.Navigate().GoToUrl(BaseUrl);
 
-            Wait.Until(d => d.FindElement(By.LinkText("Careers"))).Click();
+            WaitClick(By.LinkText("Careers"));
 
-            var keywordField = Wait.Until(driver => driver.FindElement(By.Id("new_form_job_search-keyword")));
+            var keywordField = Wait.Until(driver => driver.FindElement(careersPage.KeywordField));
             keywordField.Clear();
             keywordField.SendKeys(keyword);
 
-            Driver.FindElement(By.CssSelector("div.recruiting-search__location")).Click();
-            Driver.FindElement(By.XPath("//li[contains(text(), 'All Locations')]")).Click();
+            Click(careersPage.LocationFilter);
+            Click(careersPage.AllLocations);
+            Click(careersPage.FilterLabel);
+            Click(careersPage.SearchButton);
 
-            Driver.FindElement(By.CssSelector("label.recruiting-search__filter-label-23")).Click();
-
-            Driver.FindElement(By.ClassName("job-search-button-transparent-23"))?.Click();
-
-            var latestJob = Wait.Until(d => d.FindElements(By.ClassName("search-result__item"))).Last();
-            latestJob.FindElement(By.CssSelector("div.search-result__item-controls a.search-result__item-apply-23")).Click();
+            var latestJob = Wait.Until(d => d.FindElements(careersPage.SearchResults)).Last();
+            latestJob.FindElement(careersPage.ApplyButton).Click();
 
             Assert.IsTrue(Driver.PageSource.Contains(keyword), "The job description does not contain the expected keyword.");
             Logger.Info("Job search test completed successfully.");
@@ -44,25 +45,27 @@ namespace EpamAutomationTests.Tests
         [DataRow("Automation")]
         public void ValidateGlobalSearch(string searchTerm)
         {
+            var globalSearchPage = new GlobalSearchPage(Driver, Wait);
+
             Logger.Info($"Starting global search test for term: {searchTerm}");
-            Driver.Navigate().GoToUrl("https://www.epam.com/");
+            Driver.Navigate().GoToUrl(BaseUrl);
 
-            Driver.FindElement(By.ClassName("header-search__button"))?.Click();
+            WaitClick(By.ClassName("header-search__button"));
 
-            var searchInput = Driver.FindElement(By.TagName("input"));
+            var searchInput = Wait.Until(driver => driver.FindElement(globalSearchPage.SearchInput));
             searchInput.Clear();
             searchInput.SendKeys(searchTerm);
 
-            Driver.FindElement(By.CssSelector("span.bth-text-layer"))?.Click();
+            Click(globalSearchPage.SearchButton);
 
-            var results = Wait.Until(d => d.FindElements(By.XPath("//li[@class='search-results__item']/a")))
-                            .Select(e => e.Text.ToLower())
-                            .ToList();
+            var searchResults = Wait.Until(driver => driver.FindElements(globalSearchPage.SearchResults))
+                                    .Select(result => result.Text.ToLower())
+                                    .ToList();
 
-            Assert.IsTrue(results.All(text => text.Contains(searchTerm.ToLower())), "Not all results contain the expected term.");
+            Assert.IsTrue(searchResults.All(text => text.Contains(searchTerm.ToLower())), "Not all results contain the expected term.");
             Logger.Info("Global search test completed successfully.");
-
         }
+
 
         [TestMethod]
         [DataRow("EPAM_Corporate_Overview_Q4FY-2024.pdf")]
@@ -71,7 +74,7 @@ namespace EpamAutomationTests.Tests
             Logger.Info($"Starting file download test for: {expectedFileName}");
             var homePage = new HomePage(Driver, Wait);
 
-            Driver.Navigate().GoToUrl("https://www.epam.com/");
+            Driver.Navigate().GoToUrl(BaseUrl);
             homePage.NavigateToAbout();
             homePage.ScrollToEPAMAtAGlance();
             homePage.ClickDownloadButton();
@@ -93,7 +96,7 @@ namespace EpamAutomationTests.Tests
             Logger.Info("Starting carousel article title validation test.");
             var homePage = new HomePage(Driver, Wait);
 
-            Driver.Navigate().GoToUrl("https://www.epam.com/");
+            Driver.Navigate().GoToUrl(BaseUrl);
             homePage.NavigateToInsights();
             homePage.SwipeCarousel(2); // Swipe twice
             var expectedTitle = homePage.GetArticleTitleFromCarousel();

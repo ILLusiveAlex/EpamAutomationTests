@@ -11,7 +11,7 @@ namespace TAF.Core
         {
             var builder = new ConfigurationBuilder()
                 .SetBasePath(Directory.GetCurrentDirectory())
-                .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true);
+                .AddJsonFile("app.config", optional: false, reloadOnChange: true);
 
             _configuration = builder.Build();
         }

@@ -2,6 +2,7 @@
 using OpenQA.Selenium;
 using OpenQA.Selenium.Support.UI;
 using System;
+using EpamAutomationTests.Pages;
 
 namespace EpamAutomationTests.Core
 {
@@ -10,6 +11,24 @@ namespace EpamAutomationTests.Core
         protected IWebDriver Driver;
         protected WebDriverWait Wait;
 
+        protected void WaitClick(By locator)
+        {
+            Wait.Until(driver => driver.FindElement(locator)).Click();
+        }
+
+        protected void Click(By locator)
+        {
+            Driver.FindElement(locator).Click();
+        }
+
+        protected void ClickApplyButtonOfLatestJob()
+        {
+            var latestJob = Driver.FindElements(By.ClassName("search-result__item")).Last();
+            latestJob.FindElement(By.CssSelector("div.search-result__item-controls a.search-result__item-apply-23")).Click();
+        }
+
+
+        protected string BaseUrl => "https://www.epam.com/";
         [TestInitialize]
         public void Setup()
         {
@@ -31,8 +50,18 @@ namespace EpamAutomationTests.Core
         private void TakeScreenshot()
         {
             var screenshot = ((ITakesScreenshot)Driver).GetScreenshot();
+
+            var screenshotsFolder = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Screenshots");
+
+            if (!Directory.Exists(screenshotsFolder))
+            {
+                Directory.CreateDirectory(screenshotsFolder);
+            }
+
             var fileName = $"{TestContext.TestName}_{DateTime.Now:yyyyMMdd_HHmmss}.png";
-            screenshot.SaveAsFile(fileName);
+            var fullPath = Path.Combine(screenshotsFolder, fileName);
+
+            screenshot.SaveAsFile(fullPath);
         }
 
         public TestContext TestContext { get; set; }
