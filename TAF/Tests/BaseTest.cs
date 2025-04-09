@@ -28,7 +28,7 @@ namespace EpamAutomationTests.Core
         }
 
 
-        protected string BaseUrl => "https://www.epam.com/";
+        protected string BaseUrl => Constants.BaseUrl;
         [TestInitialize]
         public void Setup()
         {

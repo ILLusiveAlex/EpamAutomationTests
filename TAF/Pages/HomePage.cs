@@ -16,6 +16,12 @@ namespace EpamAutomationTests.Pages
             _wait = wait;
         }
 
+        public void NavigateToHomePage()
+        {
+            Logger.Info("Navigating to EPAM homepage");
+            _driver.Navigate().GoToUrl(Constants.BaseUrl);
+        }
+
         // Navigate to "About" section
         public void NavigateToAbout()
         {

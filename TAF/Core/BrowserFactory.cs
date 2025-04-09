@@ -16,7 +16,7 @@ namespace EpamAutomationTests.Core
         {
             var options = new ChromeOptions();
             options.AddArgument("start-maximized");
-            options.AddArgument("headless");
+            //options.AddArgument("headless");
             return new ChromeDriver(options);
         }
     }

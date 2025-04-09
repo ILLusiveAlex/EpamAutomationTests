@@ -19,7 +19,7 @@ namespace EpamAutomationTests.Tests.Core
             var careersPage = new CareersPage(Driver, Wait);
 
             Logger.Info($"Starting job search test for keyword: {keyword}");
-            Driver.Navigate().GoToUrl(BaseUrl);
+            Driver.Navigate().GoToUrl(Constants.BaseUrl);
 
             WaitClick(By.LinkText("Careers"));
 
@@ -48,7 +48,7 @@ namespace EpamAutomationTests.Tests.Core
             var globalSearchPage = new GlobalSearchPage(Driver, Wait);
 
             Logger.Info($"Starting global search test for term: {searchTerm}");
-            Driver.Navigate().GoToUrl(BaseUrl);
+            Driver.Navigate().GoToUrl(Constants.BaseUrl);
 
             WaitClick(By.ClassName("header-search__button"));
 
@@ -74,7 +74,7 @@ namespace EpamAutomationTests.Tests.Core
             Logger.Info($"Starting file download test for: {expectedFileName}");
             var homePage = new HomePage(Driver, Wait);
 
-            Driver.Navigate().GoToUrl(BaseUrl);
+            Driver.Navigate().GoToUrl(Constants.BaseUrl);
             homePage.NavigateToAbout();
             homePage.ScrollToEPAMAtAGlance();
             homePage.ClickDownloadButton();
@@ -96,7 +96,7 @@ namespace EpamAutomationTests.Tests.Core
             Logger.Info("Starting carousel article title validation test.");
             var homePage = new HomePage(Driver, Wait);
 
-            Driver.Navigate().GoToUrl(BaseUrl);
+            Driver.Navigate().GoToUrl(Constants.BaseUrl);
             homePage.NavigateToInsights();
             homePage.SwipeCarousel(2); // Swipe twice
             var expectedTitle = homePage.GetArticleTitleFromCarousel();
