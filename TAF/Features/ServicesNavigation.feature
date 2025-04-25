@@ -1,3 +1,4 @@
+ @API
 Feature: EPAM Services Navigation
     As a user
     I want to navigate to specific service categories on the EPAM website
