@@ -46,7 +46,8 @@ jobs:
         id: run-tests
         run: |
           $browser = "$env:SELECTED_BROWSER"
-          dotnet test TAF/EpamAutomationTests.csproj --logger "trx;LogFileName=test-results.trx" -- "TestRunParameters.Parameter(name=\"Browser\", value=\"$browser\")"
+          $testParams = "TestRunParameters.Parameter(name=\`"Browser\`", value=\`"$browser\`")"
+          dotnet test TAF/EpamAutomationTests.csproj --logger "trx;LogFileName=test-results.trx" -- $testParams
           echo "TESTS_EXIT_CODE=$?" >> $env:GITHUB_ENV
 
       - name: Collect Test Results
