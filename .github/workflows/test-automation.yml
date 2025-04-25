@@ -52,7 +52,7 @@ jobs:
         cp TAF/TestResults/*.png test-results/
 
     - name: Download Test Results
-        uses:actions/download-artifact@v3
+      uses: actions/download-artifact@v3.0.2
       with:
          name: test-results
          path: ./downloaded-test-results
