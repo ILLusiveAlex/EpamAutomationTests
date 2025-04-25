@@ -46,7 +46,7 @@ jobs:
       run: dotnet test TAF/EpamAutomationTests.csproj --filter "Category=UI" --logger "trx;LogFileName=ui-test-results.trx" -- TestRunParameters.Parameter(name=\"Browser\", value=\"${{ github.event.inputs.browser || 'chrome' }}\")
 
     - name: Download Test Results
-      uses: actions/download-artifact@v4
+      uses: actions/download-artifact@v3.1.2
       with:
         name: test-results
         path: TAF/TestResults
