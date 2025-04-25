@@ -42,14 +42,15 @@ jobs:
       - name: Build Solution
         run: dotnet build --no-restore
 
-      - name: Run Tests
-        id: run-tests
+      - name: Run UI Tests
+        shell: pwsh
         run: |
-          $browser = "$env:SELECTED_BROWSER"
-          $testParams = "TestRunParameters.Parameter(name=\`"Browser\`", value=\`"$browser\`")"
-          dotnet test TAF/EpamAutomationTests.csproj --logger "trx;LogFileName=test-results.trx" -- $testParams
-          echo "TESTS_EXIT_CODE=$?" >> $env:GITHUB_ENV
-
+          $browser = "${{ env.SELECTED_BROWSER }}"
+          dotnet test TAF/EpamAutomationTests.csproj `
+          --logger "trx;LogFileName=test-results.trx" `
+          -- TestRunParameters.Parameter(name=\"Browser\", value=\"$browser\")
+          echo "TESTS_EXIT_CODE=$LASTEXITCODE" >> $env:GITHUB_ENV
+          
       - name: Collect Test Results
         if: always()
         run: |
