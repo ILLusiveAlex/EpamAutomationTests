@@ -4,7 +4,7 @@ on:
   pull_request:
     branches: [ main ]
   schedule:
-    - cron: '0 0 * * *' # daily at midnight UTC
+    - cron: '0 0 * * *'  # Runs daily at midnight
   workflow_dispatch:
     inputs:
       browser:
@@ -24,49 +24,64 @@ jobs:
   run-tests:
     runs-on: windows-latest
 
+    env:
+      SELECTED_BROWSER: ${{ github.event.inputs.browser || 'chrome' }}
+
     steps:
-    - name: Checkout Code
-      uses: actions/checkout@v3.6.0
+      - name: Checkout Repository
+        uses: actions/checkout@v3.6.0
 
-    - name: Setup .NET
-      uses: actions/setup-dotnet@v3.4.2
-      with:
-        dotnet-version: ${{ env.DOTNET_VERSION }}
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v3.4.2
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
 
-    - name: Restore Dependencies
-      run: dotnet restore
+      - name: Restore Dependencies
+        run: dotnet restore
 
-    - name: Build Solution
-      run: dotnet build --no-restore
+      - name: Build Solution
+        run: dotnet build --no-restore
 
-    - name: Run API Tests
-      run: >
-        dotnet test TAF/EpamAutomationTests.csproj
-        --filter "Category=API"
-        --logger "trx;LogFileName=api-test-results.trx"
-      continue-on-error: true
+      - name: Run API Tests
+        id: api-tests
+        run: |
+          dotnet test TAF/EpamAutomationTests.csproj --filter "FullyQualifiedName~API" --logger "trx;LogFileName=api-test-results.trx"
+          echo "API_TESTS_EXIT_CODE=$?" >> $env:GITHUB_ENV
+        continue-on-error: true
 
-    - name: Set Browser for UI Tests
-      run: |
-        $browser = "${{ github.event.inputs.browser || 'chrome' }}"
-        (Get-Content TestRunParameters.runsettings) -replace 'value=".*?"', "value=`"$browser`"" | Set-Content TestRunParameters.runsettings
+      - name: Run UI Tests
+        id: ui-tests
+        run: |
+          $browser = "$env:SELECTED_BROWSER"
+          dotnet test TAF/EpamAutomationTests.csproj --filter "FullyQualifiedName~UI" --logger "trx;LogFileName=ui-test-results.trx" -- "TestRunParameters.Parameter(name=\`"Browser\`", value=\`"$browser\`")"
+          echo "UI_TESTS_EXIT_CODE=$?" >> $env:GITHUB_ENV
+        continue-on-error: true
 
-    - name: Run UI Tests
-      run: >
-        dotnet test TAF/EpamAutomationTests.csproj
-        --filter "Category=UI"
-        --logger "trx;LogFileName=ui-test-results.trx"
-        --settings TestRunParameters.runsettings
+      - name: Collect Test Results
+        if: always()
+        run: |
+          mkdir -p test-results
+          # Copy test result files
+          cp TAF/TestResults/*.trx test-results/ 2>/dev/null || echo "No .trx files to copy."
+          # Copy screenshots
+          cp TAF/TestResults/*.png test-results/ 2>/dev/null || echo "No .png files to copy."
+          # Create summary file
+          echo "Test Run Summary" > test-results/summary.txt
+          echo "API Tests Exit Code: $env:API_TESTS_EXIT_CODE" >> test-results/summary.txt
+          echo "UI Tests Exit Code: $env:UI_TESTS_EXIT_CODE" >> test-results/summary.txt
+          echo "Selected Browser: $env:SELECTED_BROWSER" >> test-results/summary.txt
 
-    - name: Copy Test Results
-      run: |
-        mkdir test-results
-        Copy-Item -Path TAF/TestResults/*.trx -Destination test-results -Force -ErrorAction SilentlyContinue
-        Copy-Item -Path TAF/TestResults/*.png -Destination test-results -Force -ErrorAction SilentlyContinue
+      - name: Upload Test Results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results
+          path: test-results
+          retention-days: 30
 
-    - name: Upload Test Results
-      uses: actions/upload-artifact@v4
-      with:
-        name: test-results
-        path: test-results
-        retention-days: 30
+      - name: Notify Test Results
+        if: always()
+        run: |
+          if ($env:API_TESTS_EXIT_CODE -ne 0) { Write-Output "API Tests Failed" }
+          if ($env:UI_TESTS_EXIT_CODE -ne 0) { Write-Output "UI Tests Failed" }
+          if (($env:API_TESTS_EXIT_CODE -eq 0) -and ($env:UI_TESTS_EXIT_CODE -eq 0)) { Write-Output "All Tests Passed" }
