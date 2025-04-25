@@ -23,37 +23,45 @@ env:
 jobs:
   run-tests:
     runs-on: windows-latest
-    
+
     steps:
-    - uses: actions/checkout@v3
-    
-    - name: Setup .NET
-      uses: actions/setup-dotnet@v3
-      with:
-        dotnet-version: ${{ env.DOTNET_VERSION }}
-    
-    - name: Restore dependencies
-      run: dotnet restore
-    
-    - name: Build
-      run: dotnet build --no-restore
-    
-    - name: Run API Tests
-      run: dotnet test TAF/EpamAutomationTests.csproj --filter "Category=API" --logger "trx;LogFileName=api-test-results.trx"
-      continue-on-error: true
-    
-    - name: Run UI Tests
-      run: dotnet test TAF/EpamAutomationTests.csproj --filter "Category=UI" --logger "trx;LogFileName=ui-test-results.trx" --test-param:Browser=${{ github.event.inputs.browser || 'chrome' }}
-    
-    - name: Copy Test Results
-      run: |
-        mkdir -p test-results
-        cp TAF/TestResults/*.trx test-results/
-        cp TAF/TestResults/*.png test-results/
-    
-    - name: Upload Test Results
-      uses: actions/upload-artifact@v3
-      with:
-        name: test-results
-        path: test-results
-        retention-days: 30 
+      - name: Checkout Repository
+        uses: actions/checkout@v3.6.0
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v3.4.2
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+
+      - name: Restore Dependencies
+        run: dotnet restore
+
+      - name: Build Solution
+        run: dotnet build --no-restore
+
+      - name: Run API Tests
+        run: dotnet test TAF/EpamAutomationTests.csproj --filter "Category=API" --logger "trx;LogFileName=api-test-results.trx"
+        continue-on-error: true
+
+      - name: Run UI Tests
+        run: dotnet test TAF/EpamAutomationTests.csproj --filter "Category=UI" --logger "trx;LogFileName=ui-test-results.trx" -- TestRunParameters.Parameter(name=\"Browser\", value=\"${{ github.event.inputs.browser || 'chrome' }}\")
+
+      - name: Copy Test Results
+        run: |
+          mkdir -p test-results
+          cp TAF/TestResults/*.trx test-results/ || echo "No .trx files to copy."
+          cp TAF/TestResults/*.png test-results/ || echo "No .png files to copy."
+
+      - name: Upload Test Results
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results
+          path: test-results
+          retention-days: 30
+
+      - name: Download Test Results (Safe Version)
+        uses: actions/download-artifact@v4
+        if: false  # Set to true when needed
+        with:
+          name: test-results
+          path: ./downloaded-test-results
