@@ -2,6 +2,7 @@
 using OpenQA.Selenium;
 using OpenQA.Selenium.Support.UI;
 using System;
+using System.Configuration;
 using EpamAutomationTests.Pages;
 
 namespace EpamAutomationTests.Core
@@ -10,6 +11,7 @@ namespace EpamAutomationTests.Core
     {
         protected IWebDriver Driver;
         protected WebDriverWait Wait;
+        protected TestContext TestContext { get; set; }
 
         protected void WaitClick(By locator)
         {
@@ -27,14 +29,37 @@ namespace EpamAutomationTests.Core
             latestJob.FindElement(By.CssSelector("div.search-result__item-controls a.search-result__item-apply-23")).Click();
         }
 
-
         protected string BaseUrl => Constants.BaseUrl;
+
         [TestInitialize]
         public void Setup()
         {
-            Driver = BrowserFactory.GetDriver("chrome");
-            Driver.Manage().Timeouts().ImplicitWait = TimeSpan.FromSeconds(10);
-            Wait = new WebDriverWait(Driver, TimeSpan.FromSeconds(10));
+            var browser = TestContext.Properties["Browser"]?.ToString() ?? "chrome";
+            var implicitWait = int.Parse(TestContext.Properties["ImplicitWait"]?.ToString() ?? "30");
+            var pageLoadTimeout = int.Parse(TestContext.Properties["PageLoadTimeout"]?.ToString() ?? "60");
+            var scriptTimeout = int.Parse(TestContext.Properties["ScriptTimeout"]?.ToString() ?? "60");
+            var acceptCookies = bool.Parse(TestContext.Properties["AcceptCookies"]?.ToString() ?? "true");
+
+            Driver = BrowserFactory.GetDriver(browser);
+            Driver.Manage().Timeouts().ImplicitWait = TimeSpan.FromSeconds(implicitWait);
+            Driver.Manage().Timeouts().PageLoad = TimeSpan.FromSeconds(pageLoadTimeout);
+            Driver.Manage().Timeouts().AsynchronousJavaScript = TimeSpan.FromSeconds(scriptTimeout);
+            Wait = new WebDriverWait(Driver, TimeSpan.FromSeconds(implicitWait));
+
+            // Navigate to base URL and handle cookie consent if needed
+            Driver.Navigate().GoToUrl(BaseUrl);
+            if (acceptCookies)
+            {
+                try
+                {
+                    var cookieConsent = Wait.Until(d => d.FindElement(By.Id("onetrust-accept-btn-handler")));
+                    cookieConsent.Click();
+                }
+                catch (WebDriverTimeoutException)
+                {
+                    // Cookie consent not found, continue
+                }
+            }
         }
 
         [TestCleanup]
@@ -49,21 +74,17 @@ namespace EpamAutomationTests.Core
 
         private void TakeScreenshot()
         {
-            var screenshot = ((ITakesScreenshot)Driver).GetScreenshot();
-
-            var screenshotsFolder = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Screenshots");
-
-            if (!Directory.Exists(screenshotsFolder))
+            try
             {
-                Directory.CreateDirectory(screenshotsFolder);
+                var screenshot = ((ITakesScreenshot)Driver).GetScreenshot();
+                var fileName = $"{TestContext.FullyQualifiedTestClassName}_{TestContext.TestName}_{DateTime.Now:yyyyMMdd_HHmmss}.png";
+                screenshot.SaveAsFile($"{TestContext.TestResultsDirectory}\\{fileName}", ScreenshotImageFormat.Png);
+                TestContext.AddResultFile($"{TestContext.TestResultsDirectory}\\{fileName}");
             }
-
-            var fileName = $"{TestContext.TestName}_{DateTime.Now:yyyyMMdd_HHmmss}.png";
-            var fullPath = Path.Combine(screenshotsFolder, fileName);
-
-            screenshot.SaveAsFile(fullPath);
+            catch (Exception ex)
+            {
+                Logger.Error($"Failed to take screenshot: {ex.Message}");
+            }
         }
-
-        public TestContext TestContext { get; set; }
     }
 }

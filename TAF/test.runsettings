@@ -4,13 +4,14 @@
     <Parameter name="Browser" value="chrome" />
     <Parameter name="BaseUrl" value="https://www.epam.com" />
     <Parameter name="ImplicitWait" value="30" />
-    <Parameter name="PageLoadTimeout" value="30" />
-    <Parameter name="ScriptTimeout" value="30" />
+    <Parameter name="PageLoadTimeout" value="60" />
+    <Parameter name="ScriptTimeout" value="60" />
+    <Parameter name="AcceptCookies" value="true" />
   </TestRunParameters>
   <RunConfiguration>
     <ResultsDirectory>TestResults</ResultsDirectory>
     <MaxCpuCount>1</MaxCpuCount>
-    <TestSessionTimeout>600000</TestSessionTimeout>
+    <TestSessionTimeout>1200000</TestSessionTimeout>
   </RunConfiguration>
   <MSTest>
     <Parallelize>
