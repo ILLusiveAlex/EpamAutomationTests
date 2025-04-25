@@ -49,7 +49,7 @@ jobs:
       - name: Run UI Tests
         run: |
           $browser = "$env:SELECTED_BROWSER"
-          dotnet test TAF/EpamAutomationTests.csproj --filter "Category=UI" --logger "trx;LogFileName=ui-test-results.trx" -- "TestRunParameters.Parameter(name=\`"Browser\`", value=\`"$browser\`")"
+          dotnet test TAF/EpamAutomationTests.csproj --filter "Category=UI" --logger "trx;LogFileName=ui-test-results.trx" -- "TestRunParameters.Parameter(name=\`"<Browser>\`", value=\`"<$browser>\`")"
       
       - name: Copy Test Results
         run: |
