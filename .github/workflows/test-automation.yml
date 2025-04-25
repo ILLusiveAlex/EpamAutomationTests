@@ -37,11 +37,13 @@ jobs:
           dotnet-version: ${{ env.DOTNET_VERSION }}
 
       - name: Update RunSettings
+        shell: pwsh
         run: |
-          $browser = "$env:SELECTED_BROWSER"
-          $runSettings = [xml](Get-Content TAF/test.runsettings)
+          $browser = "${{ env.SELECTED_BROWSER }}"
+          $runSettingsPath = "TAF/test.runsettings"
+          [xml]$runSettings = Get-Content $runSettingsPath
           $runSettings.RunSettings.TestRunParameters.Parameter.value = $browser
-          $runSettings.Save("TAF/test.runsettings")
+          $runSettings.Save($runSettingsPath)
 
       - name: Restore Dependencies
         run: dotnet restore
@@ -50,20 +52,19 @@ jobs:
         run: dotnet build --no-restore
 
       - name: Run Tests
-        id: run-tests
+        shell: pwsh
         run: |
-          dotnet test TAF/EpamAutomationTests.csproj --settings:TAF/test.runsettings --logger "trx;LogFileName=test-results.trx"
-          echo "TESTS_EXIT_CODE=$?" >> $env:GITHUB_ENV
+          dotnet test TAF/EpamAutomationTests.csproj `
+            --settings TAF/test.runsettings `
+            --logger "trx;LogFileName=test-results.trx"
+          echo "TESTS_EXIT_CODE=$LASTEXITCODE" >> $env:GITHUB_ENV
 
       - name: Collect Test Results
         if: always()
         run: |
           mkdir -p test-results
-          # Copy test result files
-          cp TAF/TestResults/*.trx test-results/ 2>/dev/null || echo "No .trx files to copy."
-          # Copy screenshots
-          cp TAF/TestResults/*.png test-results/ 2>/dev/null || echo "No .png files to copy."
-          # Create summary file
+          cp TAF/TestResults/*.trx test-results/ 2>$null || echo "No .trx files to copy."
+          cp TAF/TestResults/*.png test-results/ 2>$null || echo "No .png files to copy."
           echo "Test Run Summary" > test-results/summary.txt
           echo "Tests Exit Code: $env:TESTS_EXIT_CODE" >> test-results/summary.txt
           echo "Selected Browser: $env:SELECTED_BROWSER" >> test-results/summary.txt
