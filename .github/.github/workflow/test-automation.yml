@@ -1,0 +1,55 @@
+name: Test Automation Pipeline
+
+on:
+  pull_request:
+    branches: [ main ]
+  schedule:
+    - cron: '0 0 * * *'  # Runs daily at midnight
+  workflow_dispatch:
+    inputs:
+      browser:
+        description: 'Select browser for UI tests'
+        required: true
+        default: 'chrome'
+        type: choice
+        options:
+          - chrome
+          - firefox
+          - edge
+
+env:
+  DOTNET_VERSION: '6.0.x'
+
+jobs:
+  run-tests:
+    runs-on: windows-latest
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v3
+      with:
+        dotnet-version: ${{ env.DOTNET_VERSION }}
+    
+    - name: Restore dependencies
+      run: dotnet restore
+    
+    - name: Build
+      run: dotnet build --no-restore
+    
+    - name: Run API Tests
+      run: dotnet test TAF/EpamAutomationTests.csproj --filter "Category=API" --logger "trx;LogFileName=api-test-results.trx"
+      continue-on-error: true
+    
+    - name: Run UI Tests
+      run: dotnet test TAF/EpamAutomationTests.csproj --filter "Category=UI" --logger "trx;LogFileName=ui-test-results.trx" -- TestRunParameters.Parameter(name=\"Browser\", value=\"${{ github.event.inputs.browser || 'chrome' }}\")
+    
+    - name: Upload Test Results
+      uses: actions/upload-artifact@v3
+      with:
+        name: test-results
+        path: |
+          TAF/TestResults/*.trx
+          TAF/TestResults/*.png
+        retention-days: 30 
