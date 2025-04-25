@@ -46,7 +46,7 @@ jobs:
       run: dotnet test TAF/EpamAutomationTests.csproj --filter "Category=UI" --logger "trx;LogFileName=ui-test-results.trx" -- TestRunParameters.Parameter(name=\"Browser\", value=\"${{ github.event.inputs.browser || 'chrome' }}\")
 
     - name: Upload Test Results
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v3.1.2
       with:
         name: test-results
         path: |
