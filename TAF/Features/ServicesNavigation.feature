@@ -3,7 +3,7 @@ Feature: EPAM Services Navigation
     I want to navigate to specific service categories on the EPAM website
     So that I can learn more about EPAM's services
 
-    @ServicesNavigation
+    @UI @ServicesNavigation
     Scenario Outline: Validate Navigation to Different Service Categories
         Given I am on the EPAM homepage
         When I hover over the "Services" link in the main navigation menu
