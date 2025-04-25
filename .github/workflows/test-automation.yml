@@ -44,8 +44,12 @@ jobs:
         continue-on-error: true
 
       - name: Run UI Tests
-        run: |
-          dotnet test TAF/EpamAutomationTests.csproj --filter "Category=UI" --logger "trx;LogFileName=ui-test-results.trx" -- "TestRunParameters.Parameter(name='Browser', value='${{ github.event.inputs.browser || 'chrome' }}')"
+        run: >
+         dotnet test TAF/EpamAutomationTests.csproj
+         --filter "Category=UI"
+         --logger "trx;LogFileName=ui-test-results.trx"
+         -- TestRunParameters.Parameter\(name=\"Browser\", value=\"${{ github.event.inputs.browser || 'chrome' }}\"\)
+
       
       - name: Copy Test Results
         run: |
