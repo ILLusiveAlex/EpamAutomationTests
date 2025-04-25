@@ -42,7 +42,8 @@ jobs:
           $browser = "${{ env.SELECTED_BROWSER }}"
           $runSettingsPath = "TAF/test.runsettings"
           [xml]$runSettings = Get-Content $runSettingsPath
-          $runSettings.RunSettings.TestRunParameters.Parameter.value = $browser
+          $browserParam = $runSettings.RunSettings.TestRunParameters.Parameter | Where-Object { $_.name -eq "Browser" }
+          $browserParam.SetAttribute("value", $browser)
           $runSettings.Save($runSettingsPath)
 
       - name: Restore Dependencies
