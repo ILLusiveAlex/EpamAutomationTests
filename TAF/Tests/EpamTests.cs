@@ -12,6 +12,7 @@ namespace EpamAutomationTests.Tests.Core
     public class EpamTests : BaseTest
     {
         [TestMethod]
+        [TestCategory("UI")]
         [DataRow("Java")]
         [DataRow("C#")]
         public void ValidateJobSearch(string keyword)
@@ -40,6 +41,7 @@ namespace EpamAutomationTests.Tests.Core
         }
 
         [TestMethod]
+        [TestCategory("UI")]
         [DataRow("BLOCKCHAIN")]
         [DataRow("Cloud")]
         [DataRow("Automation")]
@@ -68,6 +70,7 @@ namespace EpamAutomationTests.Tests.Core
 
 
         [TestMethod]
+        [TestCategory("UI")]
         [DataRow("EPAM_Corporate_Overview_Q4FY-2024.pdf")]
         public void ValidateFileDownload(string expectedFileName)
         {
@@ -91,6 +94,7 @@ namespace EpamAutomationTests.Tests.Core
         }
 
         [TestMethod]
+        [TestCategory("UI")]
         public void ValidateArticleTitleInCarousel()
         {
             Logger.Info("Starting carousel article title validation test.");
