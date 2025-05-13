@@ -68,7 +68,16 @@ namespace EpamAutomationTests.Pages
         public string GetArticleTitleFromCarousel()
         {
             Logger.Info("Getting article title from carousel.");
-            return _wait.Until(d => d.FindElement(By.CssSelector("span.font-size-60 .museo-sans-500.gradient-text"))).Text;
+            // First scroll to make sure the carousel is in view
+            ((IJavaScriptExecutor)_driver).ExecuteScript("window.scrollBy(0, 160);");
+            
+            // Wait for the carousel to be visible and get the title
+            var titleElement = _wait.Until(d => {
+                var element = d.FindElement(By.CssSelector("span.font-size-60 > span.museo-sans-light:first-child + span.rte-text-gradient > span.museo-sans-700.gradient-text + span.museo-sans-light\r\n"));
+                return element.Displayed ? element : null;
+            });
+            
+            return titleElement.Text;
         }
 
         // Click "Read More" button

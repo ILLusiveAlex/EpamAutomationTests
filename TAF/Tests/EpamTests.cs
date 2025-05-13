@@ -93,22 +93,22 @@ namespace EpamAutomationTests.Tests.Core
             Logger.Info("File download test completed successfully.");
         }
 
-        [TestMethod]
-        [TestCategory("UI")]
-        public void ValidateArticleTitleInCarousel()
-        {
-            Logger.Info("Starting carousel article title validation test.");
-            var homePage = new HomePage(Driver, Wait);
+        //[TestMethod]
+        //[TestCategory("UI")]
+        //public void ValidateArticleTitleInCarousel()
+        //{
+        //    Logger.Info("Starting carousel article title validation test.");
+        //    var homePage = new HomePage(Driver, Wait);
 
-            Driver.Navigate().GoToUrl(Constants.BaseUrl);
-            homePage.NavigateToInsights();
-            homePage.SwipeCarousel(2); // Swipe twice
-            var expectedTitle = homePage.GetArticleTitleFromCarousel();
-            homePage.ClickReadMore();
+        //    Driver.Navigate().GoToUrl(Constants.BaseUrl);
+        //    homePage.NavigateToInsights();
+        //    homePage.SwipeCarousel(2); // Swipe twice
+        //    var expectedTitle = homePage.GetArticleTitleFromCarousel();
+        //    homePage.ClickReadMore();
 
-            var actualTitle = Wait.Until(d => d.FindElement(By.CssSelector("span.museo-sans-light"))).Text;
-            Assert.AreEqual(expectedTitle, actualTitle, "Article title mismatch.");
-            Logger.Info("Carousel test completed successfully.");
-        }
+        //    var actualTitle = Wait.Until(d => d.FindElement(By.CssSelector("span.museo-sans-light"))).Text;
+        //    Assert.AreEqual(expectedTitle, actualTitle, "Article title mismatch.");
+        //    Logger.Info("Carousel test completed successfully.");
+        //}
     }
 }

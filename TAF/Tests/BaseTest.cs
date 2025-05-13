@@ -1,6 +1,7 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Support.UI;
+using OpenQA.Selenium.Support.Extensions;
 using System;
 using System.Configuration;
 using EpamAutomationTests.Pages;
@@ -11,7 +12,8 @@ namespace EpamAutomationTests.Core
     {
         protected IWebDriver Driver;
         protected WebDriverWait Wait;
-        protected TestContext TestContext { get; set; }
+        
+        public TestContext TestContext { get; set; }
 
         protected void WaitClick(By locator)
         {
@@ -78,7 +80,7 @@ namespace EpamAutomationTests.Core
             {
                 var screenshot = ((ITakesScreenshot)Driver).GetScreenshot();
                 var fileName = $"{TestContext.FullyQualifiedTestClassName}_{TestContext.TestName}_{DateTime.Now:yyyyMMdd_HHmmss}.png";
-                screenshot.SaveAsFile($"{TestContext.TestResultsDirectory}\\{fileName}", ScreenshotImageFormat.Png);
+                screenshot.SaveAsFile($"{TestContext.TestResultsDirectory}\\{fileName}");
                 TestContext.AddResultFile($"{TestContext.TestResultsDirectory}\\{fileName}");
             }
             catch (Exception ex)
