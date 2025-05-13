@@ -26,14 +26,22 @@ namespace EpamAutomationTests.Pages
         public void NavigateToAbout()
         {
             Logger.Info("Navigating to About page.");
-            _driver.FindElement(By.LinkText("About")).Click();
+            var aboutLink = _wait.Until(d => {
+                var element = d.FindElement(By.CssSelector("a[href*='about']"));
+                return element.Displayed ? element : null;
+            });
+            ((IJavaScriptExecutor)_driver).ExecuteScript("arguments[0].click();", aboutLink);
         }
 
         // Navigate to "Insights" section
         public void NavigateToInsights()
         {
             Logger.Info("Navigating to Insights page.");
-            _driver.FindElement(By.LinkText("Insights")).Click();
+            var insightsLink = _wait.Until(d => {
+                var element = d.FindElement(By.CssSelector("a[href*='insights']"));
+                return element.Displayed ? element : null;
+            });
+            ((IJavaScriptExecutor)_driver).ExecuteScript("arguments[0].click();", insightsLink);
         }
 
         // Scroll to "EPAM at a Glance" section

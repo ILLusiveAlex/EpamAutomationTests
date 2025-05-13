@@ -48,19 +48,36 @@ namespace EpamAutomationTests.Core
             Driver.Manage().Timeouts().AsynchronousJavaScript = TimeSpan.FromSeconds(scriptTimeout);
             Wait = new WebDriverWait(Driver, TimeSpan.FromSeconds(implicitWait));
 
-            // Navigate to base URL and handle cookie consent if needed
-            Driver.Navigate().GoToUrl(BaseUrl);
+            // Navigate to base URL
+            Driver.Navigate().GoToUrl(Constants.BaseUrl);
+            
+            // Wait for page to be fully loaded
+            Wait.Until(driver => ((IJavaScriptExecutor)driver).ExecuteScript("return document.readyState").Equals("complete"));
+            
+            // Handle cookie consent if needed
             if (acceptCookies)
             {
                 try
                 {
                     var cookieConsent = Wait.Until(d => d.FindElement(By.Id("onetrust-accept-btn-handler")));
                     cookieConsent.Click();
+                    // Wait for cookie banner to disappear
+                    Wait.Until(d => !d.FindElements(By.Id("onetrust-accept-btn-handler")).Any());
                 }
                 catch (WebDriverTimeoutException)
                 {
                     // Cookie consent not found, continue
                 }
+            }
+            
+            // Wait for any loading overlays to disappear
+            try
+            {
+                Wait.Until(d => !d.FindElements(By.CssSelector(".loading-overlay")).Any());
+            }
+            catch (WebDriverTimeoutException)
+            {
+                // No loading overlay found, continue
             }
         }
 
